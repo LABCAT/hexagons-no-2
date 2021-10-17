@@ -4,10 +4,11 @@ import "p5/lib/addons/p5.sound";
 import * as p5 from "p5";
 import { Midi } from '@tonejs/midi'
 import PlayIcon from './functions/PlayIcon.js';
+import ShuffleArray from './functions/ShuffleArray.js';
 import TetradicColourCalulator from './functions/TetradicColourCalulator.js';
 
-import audio from "../audio/circles-no-3.ogg";
-import midi from "../audio/circles-no-3.mid";
+import audio from "../audio/hexagons-no-2.ogg";
+import midi from "../audio/hexagons-no-2.mid";
 
 const P5SketchWithAudio = () => {
     const sketchRef = useRef();
@@ -28,17 +29,24 @@ const P5SketchWithAudio = () => {
 
         p.baseSize = 0;
 
-        p.baseDivisors = [4, 8, 16, 32, 64];
+        p.baseDivisors = [8, 16, 32, 64];
 
         p.baseDivisor = 64;
 
-        p.colourPallette = [];
+        p.colourPalette = [];
+
+        p.baseRepititions = [4, 8, 16];
+
+        p.baseRepitition = 1;
 
         p.loadMidi = () => {
             Midi.fromUrl(midi).then(
                 function(result) {
-                    const noteSet1 = result.tracks[5].notes; // Synth 1
+                    console.log(result);
+                    const noteSet1 = result.tracks[5].notes; // Sampler 3 - QS Pure
+                    const noteSet2 = result.tracks[3].notes; // Sampler 2 - QS Para
                     p.scheduleCueSet(noteSet1, 'executeCueSet1');
+                    p.scheduleCueSet(noteSet2, 'executeCueSet2');
                     p.audioLoaded = true;
                     document.getElementById("loader").classList.add("loading--complete");
                     document.getElementById("play-icon").classList.remove("fade-out");
@@ -48,10 +56,22 @@ const P5SketchWithAudio = () => {
         }
 
         p.preload = () => {
-            // p.song = p.loadSound(audio, p.loadMidi);
-            // p.song.onended(p.logCredits);
-            document.getElementById("loader").classList.add("loading--complete");
-                    document.getElementById("play-icon").classList.remove("fade-out");
+            p.song = p.loadSound(audio, p.loadMidi);
+            p.song.onended(p.logCredits);
+        }
+
+        p.setup = () => {
+            p.noLoop();
+            p.colorMode(p.HSB);
+            p.canvas = p.createCanvas(p.canvasWidth, p.canvasHeight);
+            p.reset();
+        }
+
+        p.draw = () => {
+            if(p.audioLoaded && p.song.isPlaying()){
+               
+                // p.hexagon(p.width /2, p.height / 2, p.baseSize);
+            }
         }
 
         p.scheduleCueSet = (noteSet, callbackName, poly = false)  => {
@@ -69,31 +89,37 @@ const P5SketchWithAudio = () => {
             }
         } 
 
-        p.setup = () => {
-            p.colorMode(p.HSB);
-            p.canvas = p.createCanvas(p.canvasWidth, p.canvasHeight);
-            p.populateHexagonGrid();
-            p.reset();
-        }
-
-        p.draw = () => {
-            let count = 0;
-            p.hexagonGrid.forEach(hexagon => {
-                const colour = p.colourPallette[count % p.colourPallette.length];
-                p.fill(colour.h, colour.s, colour.b);
-                p.hexagon(p.baseSize * hexagon.x, p.baseSize * hexagon.y, p.baseSize);
-                count++;
-            });
-            if(p.audioLoaded && p.song.isPlaying()){
-
-            }
-        }
-
         p.executeCueSet1 = (note) => {
-            p.background(p.random(255), p.random(255), p.random(255));
-            p.fill(p.random(255), p.random(255), p.random(255));
-            p.noStroke();
-            p.ellipse(p.width / 2, p.height / 2, p.width / 4, p.width / 4);
+            const { duration } = note,
+                delay = parseInt(duration * 1000) / p.baseRepitition;
+            p.changeBaseSize();
+            p.background(0);
+            p.hexagonGrid.forEach(hexagon => {
+                for (let i = 0; i < p.baseRepitition; i++) {
+                    setTimeout(
+                        function () {
+                            const { colour } = hexagon; 
+                            p.stroke(colour.h, colour.s, colour.b);
+                            if(p.baseRepitition > 1) {
+                                p.noFill();
+                                p.strokeWeight(4);
+                            }
+                            else {
+                                p.fill(colour.h, colour.s, colour.b);
+                            }
+                            p.hexagon(p.baseSize * hexagon.x, p.baseSize * hexagon.y, p.baseSize / (i + 1));
+                        },
+                        (delay * i)
+                    );
+                }
+            });
+        }
+
+        p.executeCueSet2 = (note) => {
+            const index = p.baseRepititions.indexOf(p.baseRepitition)
+            let repititions = [...p.baseRepititions];
+            repititions.splice(index, 1);
+            p.baseRepitition = p.random(repititions);
         }
 
         /*
@@ -117,7 +143,6 @@ const P5SketchWithAudio = () => {
         }
 
         p.mousePressed = () => {
-            p.reset();
             if(p.audioLoaded){
                 if (p.song.isPlaying()) {
                     p.song.pause();
@@ -153,11 +178,12 @@ const P5SketchWithAudio = () => {
 
         p.reset = () => {
             p.background(0);
-            p.changeBaseSize();
             const randomHue = p.random(360);
-            p.colourPallette = TetradicColourCalulator(randomHue,p.random(50, 100),p.random(50, 100));
-            p.colourPallette = p.colourPallette.concat(TetradicColourCalulator(randomHue + 45,p.random(50, 100),p.random(50, 100)));
-            console.log(p.colourPallette);
+            p.colourPalette = TetradicColourCalulator(randomHue,p.random(50, 100),p.random(50, 100));
+            p.colourPalette = p.colourPalette.concat(
+                TetradicColourCalulator(randomHue + 45,p.random(50, 100),p.random(50, 100))
+            );
+            p.changeBaseSize();
         }
 
         p.changeBaseSize = () => {
@@ -167,22 +193,30 @@ const P5SketchWithAudio = () => {
             p.baseDivisor = p.random(divisors);
             p.baseSize = p.height >= p.width ? p.height : p.width;
             p.baseSize = p.baseSize / p.baseDivisor;
+            p.populateHexagonGrid();
         }
 
         p.hexagonGrid = [];
 
         p.populateHexagonGrid = () => {
-            for (let i = 0; i < 66; i++) {
-                for (let j = 0; j < 66; j++) {
+            p.hexagonGrid = [];
+            let count = 0;
+            for (let i = 0; i < p.baseDivisor + 2; i++) {
+                for (let j = 0; j < p.baseDivisor + 2; j++) {
+                    const colour = p.colourPalette[count % p.colourPalette.length];
                     p.hexagonGrid.push(
                         {
                             x: j % 2 === 0 ? i : i - 0.5,
                             y: j,
+                            colour: colour,
                         }
                     )
+                    count++;
                 }   
             }
+            p.hexagonGrid = ShuffleArray(p.hexagonGrid);
         }
+
 
         p.updateCanvasDimensions = () => {
             p.canvasWidth = window.innerWidth;
