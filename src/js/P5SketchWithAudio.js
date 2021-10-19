@@ -94,40 +94,56 @@ const P5SketchWithAudio = () => {
         } 
 
         p.executeCueSet1 = (note) => {
-            const { duration } = note,
-                delay = parseInt(duration * 1000) / p.baseRepitition;
             p.changeBaseSize();
-            
             if(p.baseRepitition > 1) {
+                let hexasToDraw = [];
                 p.hexagonGrid = p.hexagonGrid.slice(0, Math.ceil(p.hexagonGrid.length / 4));
                 p.background(0, 0, 0, p.globalOpacity * 0.4);
                 p.fill(0,0,0, p.globalOpacity);
-                p.stroke(0,0,0);
+                p.noStroke();
+                console.log(p.globalOpacity);
                 p.hexagon(p.width / 2, p.height / 2, p.bigHexSize, 0);
                 p.hexagonGrid.forEach(hexagon => {
+                    const { colour, x, y } = hexagon;
                     let size = p.baseSize;
                     for (let i = 0; i < p.baseRepitition; i++) {
-                        setTimeout(
-                            function () {
-                                const { colour } = hexagon;
-                                for (let j = 0; j < i; j++) {
-                                    size = size - size / 10;
-                                }
-                                p.noFill();
-                                p.strokeWeight(1);
-                                p.stroke(colour.h, colour.s, colour.b, p.globalOpacity * 1.2);
-                                p.hexagon(hexagon.x, hexagon.y, size);
-                            },
-                            (delay * i)
+                        for (let j = 0; j < i; j++) {
+                            size = size - size / 10;
+                        }
+                        hexasToDraw.push(
+                            {
+                                x: x,
+                                y: y,
+                                colour: colour,
+                                size: size,
+                            }
                         );
                     }
                 });
+                hexasToDraw = ShuffleArray(hexasToDraw);
+                hexasToDraw = hexasToDraw.slice(0, Math.ceil(hexasToDraw.length / 2));
+                const { duration } = note,
+                    delay = parseInt(duration * 1000) / hexasToDraw.length;
+                for (let i = 0; i < hexasToDraw.length; i++) {
+                    const hexagon = hexasToDraw[i], 
+                        { x, y, size, colour } = hexagon;
+                    setTimeout(
+                        function () {
+                            p.noFill();
+                            p.strokeWeight(1);
+                            p.stroke(colour.h, colour.s, colour.b, p.globalOpacity * 1.5);
+                            p.hexagon(hexagon.x, hexagon.y, size);
+                        },
+                        (delay * i)
+                    );
+                }
             }
             else {
                 p.background(0, 0, 0, p.globalOpacity * 0.9);
                 p.hexagonGrid.forEach(hexagon => {
                     const { colour } = hexagon;
                     p.fill(colour.h, colour.s, colour.b, p.globalOpacity);
+                    p.stroke(colour.h, colour.s, colour.b, 0.5);
                     p.hexagon(hexagon.x, hexagon.y, p.baseSize);
                 });
             }
@@ -148,9 +164,6 @@ const P5SketchWithAudio = () => {
         p.globalOpacity = 0;
 
         p.executeCueSet3 = (note) => {
-            p.bigHexSize = p.height >= p.width ? p.width : p.height;
-                p.bigHexSize = p.bigHexSize * 1.15;
-                p.bigHexStep = (p.width - p.bigHexSize) / 32; 
             const { ticks } = note,
                semiQuaver = p.map(ticks % 122880, 0, 122880, 0, 32),
                colourIndex = Math.floor(p.map(ticks % 122880, 0, 122880, 0, 16) % 8),
@@ -225,16 +238,18 @@ const P5SketchWithAudio = () => {
             p.colourPalette = p.colourPalette.concat(
                 TetradicColourCalulator(randomHue + 30,p.random(50, 100),p.random(50, 100))
             );
+            p.baseDivisors = [2, 4, 8, 16, 32];
+            p.baseDivisor = 64;
+            p.baseRepitition = 1;
+            p.bigHexSize = p.height >= p.width ? p.width : p.height;
+            p.bigHexSize = p.bigHexSize * 1.15;
+            p.bigHexStep = (p.width - p.bigHexSize) / 32; 
             p.changeBaseSize();
         }
 
-        p.baseRepititionChanged = false;
-
         p.changeBaseSize = () => {
-            if(p.baseRepitition > 1 && !p.baseRepititionChanged){
-                p.background(0,0,100,0.7);
+            if(p.baseRepitition > 1){
                 p.baseDivisors = [ 6, 12, 24, 48 ];
-                p.baseRepititionChanged = true;
             }
             const index = p.baseDivisors.indexOf(p.baseDivisor)
             let divisors = [...p.baseDivisors];
