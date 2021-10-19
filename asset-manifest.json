@@ -1,0 +1,22 @@
+{
+  "files": {
+    "main.css": "/hexagons-no-2/static/css/main.b69f8b10.chunk.css",
+    "main.js": "/hexagons-no-2/static/js/main.648825ab.chunk.js",
+    "main.js.map": "/hexagons-no-2/static/js/main.648825ab.chunk.js.map",
+    "runtime-main.js": "/hexagons-no-2/static/js/runtime-main.759c8fa9.js",
+    "runtime-main.js.map": "/hexagons-no-2/static/js/runtime-main.759c8fa9.js.map",
+    "static/js/2.84e030b7.chunk.js": "/hexagons-no-2/static/js/2.84e030b7.chunk.js",
+    "static/js/2.84e030b7.chunk.js.map": "/hexagons-no-2/static/js/2.84e030b7.chunk.js.map",
+    "index.html": "/hexagons-no-2/index.html",
+    "static/css/main.b69f8b10.chunk.css.map": "/hexagons-no-2/static/css/main.b69f8b10.chunk.css.map",
+    "static/js/2.84e030b7.chunk.js.LICENSE.txt": "/hexagons-no-2/static/js/2.84e030b7.chunk.js.LICENSE.txt",
+    "static/media/hexagons-no-2.6cb01f6d.mid": "/hexagons-no-2/static/media/hexagons-no-2.6cb01f6d.mid",
+    "static/media/hexagons-no-2.a28c7879.ogg": "/hexagons-no-2/static/media/hexagons-no-2.a28c7879.ogg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.759c8fa9.js",
+    "static/js/2.84e030b7.chunk.js",
+    "static/css/main.b69f8b10.chunk.css",
+    "static/js/main.648825ab.chunk.js"
+  ]
+}
