@@ -101,33 +101,37 @@ const P5SketchWithAudio = () => {
             if(p.baseRepitition > 1) {
                 p.hexagonGrid = p.hexagonGrid.slice(0, Math.ceil(p.hexagonGrid.length / 4));
                 p.background(0, 0, 0, p.globalOpacity * 0.4);
+                p.fill(0,0,0, p.globalOpacity);
+                p.stroke(0,0,0);
+                p.hexagon(p.width / 2, p.height / 2, p.bigHexSize, 0);
+                p.hexagonGrid.forEach(hexagon => {
+                    let size = p.baseSize;
+                    for (let i = 0; i < p.baseRepitition; i++) {
+                        setTimeout(
+                            function () {
+                                const { colour } = hexagon;
+                                for (let j = 0; j < i; j++) {
+                                    size = size - size / 10;
+                                }
+                                p.noFill();
+                                p.strokeWeight(1);
+                                p.stroke(colour.h, colour.s, colour.b, p.globalOpacity * 1.2);
+                                p.hexagon(hexagon.x, hexagon.y, size);
+                            },
+                            (delay * i)
+                        );
+                    }
+                });
             }
             else {
                 p.background(0, 0, 0, p.globalOpacity * 0.9);
+                p.hexagonGrid.forEach(hexagon => {
+                    const { colour } = hexagon;
+                    p.fill(colour.h, colour.s, colour.b, p.globalOpacity);
+                    p.hexagon(hexagon.x, hexagon.y, p.baseSize);
+                });
             }
-            p.hexagonGrid.forEach(hexagon => {
-                let size = p.baseSize;
-                for (let i = 0; i < p.baseRepitition; i++) {
-                    setTimeout(
-                        function () {
-                            const { colour } = hexagon;
-                            for (let j = 0; j < i; j++) {
-                                size = size - size / 10;
-                            }
-                            if(p.baseRepitition > 1) {
-                                p.noFill();
-                                p.strokeWeight(1);
-                                p.stroke(colour.h, colour.s, colour.b, p.globalOpacity);
-                            }
-                            else {
-                                p.fill(colour.h, colour.s, colour.b, p.globalOpacity);
-                            }
-                            p.hexagon(hexagon.x, hexagon.y, size);
-                        },
-                        (delay * i)
-                    );
-                }
-            });
+            
         }
 
         p.executeCueSet2 = (note) => {
@@ -137,28 +141,21 @@ const P5SketchWithAudio = () => {
             p.baseRepitition = p.random(repititions);
         }
 
-        p.bigHexes = [];
-
         p.bigHexSize = 0;
 
         p.bigHexStep = 0;
 
-        p.bigHexColours = [];
-
         p.globalOpacity = 0;
 
         p.executeCueSet3 = (note) => {
+            p.bigHexSize = p.height >= p.width ? p.width : p.height;
+                p.bigHexSize = p.bigHexSize * 1.15;
+                p.bigHexStep = (p.width - p.bigHexSize) / 32; 
             const { ticks } = note,
                semiQuaver = p.map(ticks % 122880, 0, 122880, 0, 32),
                colourIndex = Math.floor(p.map(ticks % 122880, 0, 122880, 0, 16) % 8),
-               colour = p.colourPalette[colourIndex];
-            if(ticks % 122880 === 0){
-                p.bigHexes = [];
-                p.bigHexSize = p.height >= p.width ? p.width : p.height;
-                p.bigHexSize = p.bigHexSize * 1.15;
-                p.bigHexStep = (p.width - p.bigHexSize) / 32; 
-            }
-            const size =  p.bigHexSize + p.bigHexStep * semiQuaver;
+               colour = p.colourPalette[colourIndex],
+               size =  p.bigHexSize + p.bigHexStep * semiQuaver;
             p.noFill();
             p.strokeWeight(6);
             p.stroke(colour.h, colour.s, colour.b, p.globalOpacity);
@@ -235,7 +232,7 @@ const P5SketchWithAudio = () => {
 
         p.changeBaseSize = () => {
             if(p.baseRepitition > 1 && !p.baseRepititionChanged){
-                p.background(0,0,100,0.6);
+                p.background(0,0,100,0.7);
                 p.baseDivisors = [ 6, 12, 24, 48 ];
                 p.baseRepititionChanged = true;
             }
