@@ -45,7 +45,8 @@ const P5SketchWithAudio = () => {
                     console.log(result);
                     const noteSet1 = result.tracks[5].notes; // Sampler 3 - QS Pure
                     const noteSet2 = result.tracks[3].notes; // Sampler 2 - QS Para
-                    const noteSet3 = result.tracks[6].notes; // Sampler 4 - Dance Saw
+                    //const noteSet3 = result.tracks[6].notes; // Sampler 4 - Dance Saw
+                    const noteSet3 = result.tracks[1].notes.filter(note => note.midi != 43); // Redrum 1
                     let controlChanges = Object.assign({},result.tracks[7].controlChanges); // Filter 1 - Dance Saw
                     p.scheduleCueSet(noteSet1, 'executeCueSet1');
                     p.scheduleCueSet(noteSet2, 'executeCueSet2');
@@ -96,9 +97,13 @@ const P5SketchWithAudio = () => {
             const { duration } = note,
                 delay = parseInt(duration * 1000) / p.baseRepitition;
             p.changeBaseSize();
+            
             if(p.baseRepitition > 1) {
-                p.background(0, 0, 0, p.globalOpacity);
                 p.hexagonGrid = p.hexagonGrid.slice(0, Math.ceil(p.hexagonGrid.length / 4));
+                p.background(0, 0, 0, p.globalOpacity * 0.4);
+            }
+            else {
+                p.background(0, 0, 0, p.globalOpacity * 0.9);
             }
             p.hexagonGrid.forEach(hexagon => {
                 let size = p.baseSize;
@@ -115,7 +120,7 @@ const P5SketchWithAudio = () => {
                                 p.stroke(colour.h, colour.s, colour.b, p.globalOpacity);
                             }
                             else {
-                                p.fill(colour.h, colour.s, colour.b);
+                                p.fill(colour.h, colour.s, colour.b, p.globalOpacity);
                             }
                             p.hexagon(hexagon.x, hexagon.y, size);
                         },
@@ -143,31 +148,21 @@ const P5SketchWithAudio = () => {
         p.globalOpacity = 0;
 
         p.executeCueSet3 = (note) => {
-            const { currentCue } = note,
-                colourIndex = currentCue % 6 == 0 ? 5 : currentCue % 6 - 1;
-            if(currentCue % 12 === 1){
+            const { ticks } = note,
+               semiQuaver = p.map(ticks % 122880, 0, 122880, 0, 32),
+               colourIndex = Math.floor(p.map(ticks % 122880, 0, 122880, 0, 16) % 8),
+               colour = p.colourPalette[colourIndex];
+            if(ticks % 122880 === 0){
                 p.bigHexes = [];
-                p.bigHexColours = [...p.colourPalette];
-                p.bigHexColours = ShuffleArray(p.bigHexColours);
-                p.bigHexColours.splice(0, 2);
                 p.bigHexSize = p.height >= p.width ? p.width : p.height;
                 p.bigHexSize = p.bigHexSize * 1.15;
-                p.bigHexStep = (p.width - p.bigHexSize) / 12; 
+                p.bigHexStep = (p.width - p.bigHexSize) / 32; 
             }
-            p.bigHexes.push(
-                {
-                    size: p.bigHexSize,
-                    colour: p.bigHexColours[colourIndex],
-                }
-            );
-            p.bigHexes.forEach(bigHex => {
-                const { size, colour } = bigHex;
-                p.noFill();
-                p.strokeWeight(12);
-                p.stroke(colour.h, colour.s, colour.b, p.globalOpacity);
-                p.hexagon(p.width / 2, p.height / 2, size, 0);
-            });
-            p.bigHexSize = p.bigHexSize + p.bigHexStep;
+            const size =  p.bigHexSize + p.bigHexStep * semiQuaver;
+            p.noFill();
+            p.strokeWeight(6);
+            p.stroke(colour.h, colour.s, colour.b, p.globalOpacity);
+            p.hexagon(p.width / 2, p.height / 2, size, 0);
         }
 
         p.executeCueSet4 = (controlChange) => {
@@ -227,7 +222,7 @@ const P5SketchWithAudio = () => {
         };
 
         p.reset = () => {
-            p.background(0);
+            p.background(0,0,100);
             const randomHue = p.random(360);
             p.colourPalette = TetradicColourCalulator(randomHue,p.random(50, 100),p.random(50, 100));
             p.colourPalette = p.colourPalette.concat(
@@ -240,7 +235,7 @@ const P5SketchWithAudio = () => {
 
         p.changeBaseSize = () => {
             if(p.baseRepitition > 1 && !p.baseRepititionChanged){
-                p.background(255);
+                p.background(0,0,100,0.6);
                 p.baseDivisors = [ 6, 12, 24, 48 ];
                 p.baseRepititionChanged = true;
             }
