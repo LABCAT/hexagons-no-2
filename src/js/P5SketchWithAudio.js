@@ -225,7 +225,7 @@ const P5SketchWithAudio = () => {
                     console.log(
                     "Music By: http://labcat.nz/",
                     "\n",
-                    "Animation By: https://github.com/LABCAT/"
+                    "Animation By: https://github.com/LABCAT/hexagons-no-2/"
                 );
                 p.song.stop();
             }
