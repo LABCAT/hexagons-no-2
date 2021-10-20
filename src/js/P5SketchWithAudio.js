@@ -29,9 +29,9 @@ const P5SketchWithAudio = () => {
 
         p.baseSize = 0;
 
-        p.baseDivisors = [2, 4, 8, 16, 32];
+        p.baseDivisors = [2, 4, 8, 16];
 
-        p.baseDivisor = 64;
+        p.baseDivisor = 16;
 
         p.colourPalette = [];
 
@@ -131,7 +131,7 @@ const P5SketchWithAudio = () => {
                         function () {
                             p.noFill();
                             p.strokeWeight(1);
-                            p.stroke(colour.h, colour.s, colour.b, p.globalOpacity * 1.5);
+                            p.stroke(colour.h, colour.s, colour.b, p.globalOpacity * 1.8);
                             p.hexagon(hexagon.x, hexagon.y, size);
                         },
                         (delay * i)
@@ -238,7 +238,7 @@ const P5SketchWithAudio = () => {
             p.colourPalette = p.colourPalette.concat(
                 TetradicColourCalulator(randomHue + 30,p.random(50, 100),p.random(50, 100))
             );
-            p.baseDivisors = [2, 4, 8, 16, 32];
+            p.baseDivisors = [2, 4, 8, 16];
             p.baseDivisor = 64;
             p.baseRepitition = 1;
             p.bigHexSize = p.height >= p.width ? p.width : p.height;
